@@ -28,10 +28,13 @@ func main() {
 			bucket, remainingParts := pathParts[0], pathParts[1:]
 			id := r.Header.Get("Logplex-Frame-Id")
 			key := strings.Join(append(remainingParts, id), "/")
-			uploader.Upload(&s3manager.UploadInput{
+			_, err := uploader.Upload(&s3manager.UploadInput{
 				Bucket: aws.String(bucket),
 				Key:    aws.String(key),
 				Body:   r.Body,
 			})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		}))
 }
