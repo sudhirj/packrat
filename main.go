@@ -23,6 +23,9 @@ func main() {
 
 	http.ListenAndServe(":"+port, http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			if r.FormValue("token") != os.Getenv("TOKEN") {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			}
 			defer r.Body.Close()
 			pathParts := strings.Split(r.URL.Path, "/")
 			bucket, remainingParts := pathParts[0], pathParts[1:]
