@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -21,13 +22,14 @@ func main() {
 			"",
 		)}))
 
+	log.Println("Starting on port:", port)
 	http.ListenAndServe(":"+port, http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("token") != os.Getenv("TOKEN") {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			}
 			defer r.Body.Close()
-			pathParts := strings.Split(r.URL.Path, "/")
+			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			bucket, remainingParts := pathParts[0], pathParts[1:]
 			id := r.Header.Get("Logplex-Frame-Id")
 			key := strings.Join(append(remainingParts, id), "/")
@@ -39,5 +41,6 @@ func main() {
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
+			log.Println(bucket, ":", key)
 		}))
 }
